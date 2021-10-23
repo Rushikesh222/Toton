@@ -5,25 +5,23 @@ let form = document.querySelector(".search-form");
 let searchValue;
 const more = document.querySelector(".more");
 let page = 1;
-let linkfetch;
-let currentsearch;
-let url =
-  "https://api.pexels.com/v1/search?query=" + searchValue + "&per_page=15";
+let fetchLink;
+let currentSearch;
 
-//event //
-
+//event listeners//
+searchInput.addEventListener("input", updateInput);
 form = addEventListener("submit", (e) => {
-  updatephoto();
   e.preventDefault();
-  currentsearch = searchValue;
-
-  serachphotos();
+  currentSearch = searchValue;
+  searchPhotos(searchValue);
 });
-more.addEventListener("click", loadmore);
-function updatephoto(e) {
+more.addEventListener("click", loadMore);
+
+function updateInput(e) {
   searchValue = searchInput.value;
 }
-async function fetchgpi(url) {
+
+async function fetchApi(url) {
   const datafetch = await fetch(url, {
     method: "GET",
     headers: {
@@ -35,83 +33,46 @@ async function fetchgpi(url) {
   return data;
 }
 
-async function curatedphoto() {
-  linkfetch = "https://api.pexels.com/v1/curated?per_page=15";
-  const datafetch = await fetch(
-    linkfetch,
-
-    {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: auth,
-      },
-    }
-  );
-  const data = await datafetch.json();
-
-  data.photos.forEach((photo) => {
-    const galleryImg = document.createElement("div");
-    galleryImg.classList.add("gallery-img");
-    galleryImg.innerHTML = `<img src=${photo.src.large}></img>
-    <p>${photo.photographe}</p>`;
-    gallery.appendChild(galleryImg);
-  });
-}
-async function serachphotos() {
-  clear();
-  url =
-    "https://api.pexels.com/v1/search?query=" + searchValue + "&per_page=15";
-
-  const datafetch = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: auth,
-    },
-  });
-  const data = await datafetch.json();
-
+async function generatePictures(data) {
   data.photos.forEach((photo) => {
     const galleryImg = document.createElement("div");
     galleryImg.classList.add("gallery-img");
     galleryImg.innerHTML = `
-    <div class = "gallery-info"> 
-    <p>${photo.photographer}</p>
-    <a href=${photo.src.original}>Download </a>
-    </div>
-    <img src=${photo.src.large}></img>
-    `;
+          <div class="gallary-info">
+          <p>${photo.photographer}</p>;
+          <a href=${photo.src.original}>Download</a>
+          </div>
+          <img src=${photo.src.large}></img>
+          `;
     gallery.appendChild(galleryImg);
   });
 }
+async function curatedPhotos() {
+  fetchLink = "https://api.pexels.com/v1/curated?per_page=15";
+  const data = await fetchApi(fetchLink);
+
+  generatePictures(data);
+}
+async function searchPhotos(query) {
+  clear();
+  fetchLink = `https://api.pexels.com/v1/search?query=${searchValue}&per_page=15&page=1`;
+  const data = await fetchApi(fetchLink);
+  generatePictures(data);
+}
+
 function clear() {
   gallery.innerHTML = "";
   searchInput.value = "";
 }
-async function done() {
-  const data = await datafetch.json();
-  data.photos.forEach((photo) => {
-    const galleryImg = document.createElement("div");
-    galleryImg.classList.add("gallery-img");
-    galleryImg.innerHTML = `<img src=${photo.src.large}></img>
-    <p>${photo.photographe}</p>`;
-    gallery.appendChild(galleryImg);
-  });
-}
-async function loadmore() {
+
+async function loadMore() {
   page++;
-  if (currentsearch) {
-    url =
-      "https://api.pexels.com/v1/search?query=" +
-      searchValue +
-      "&per_page=15&page=" +
-      page +
-      "";
+  if (currentSearch) {
+    fetchLink = `https://api.pexels.com/v1/search?query=${currentSearch}&per_page=15&page=${page}`;
   } else {
-    linkfetch = `https://api.pexels.com/v1/curated?per_page=15&page=${page}`;
+    fetchLink = `https://api.pexels.com/v1/curated?per_page=15&page=${page}`;
   }
-  const data = await fetchgpi(linkfetch);
-  done();
+  const data = await fetchApi(fetchLink);
+  generatePictures(data);
 }
-curatedphoto();
+curatedPhotos();

@@ -89,17 +89,13 @@ function clear() {
   gallery.innerHTML = "";
   searchInput.value = "";
 }
-function done() {
+async function done() {
+  const data = await datafetch.json();
   data.photos.forEach((photo) => {
     const galleryImg = document.createElement("div");
     galleryImg.classList.add("gallery-img");
-    galleryImg.innerHTML = `
-  
-  <p>${photo.photographer}</p>
-  <a href=${photo.src.original}>Download </a>
-  
-  <img src=${photo.src.large}></img>
-  `;
+    galleryImg.innerHTML = `<img src=${photo.src.large}></img>
+    <p>${photo.photographe}</p>`;
     gallery.appendChild(galleryImg);
   });
 }
